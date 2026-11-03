@@ -1,0 +1,102 @@
+import type { RemoteKey } from './types';
+
+/** Keyboard shortcuts in the renderer (event.key -> RemoteKey), when no input is focused. */
+export const KEYBOARD_MAP: Record<string, RemoteKey> = {
+  ArrowUp: 'UP',
+  ArrowDown: 'DOWN',
+  ArrowLeft: 'LEFT',
+  ArrowRight: 'RIGHT',
+  Enter: 'SELECT',
+  Backspace: 'BACK',
+  Escape: 'BACK',
+  h: 'HOME',
+  H: 'HOME',
+  ' ': 'PLAY_PAUSE',
+  '+': 'VOLUME_UP',
+  '=': 'VOLUME_UP',
+  '-': 'VOLUME_DOWN',
+  m: 'MUTE',
+  M: 'MUTE',
+  i: 'INFO',
+  '0': 'DIGIT_0', '1': 'DIGIT_1', '2': 'DIGIT_2', '3': 'DIGIT_3', '4': 'DIGIT_4',
+  '5': 'DIGIT_5', '6': 'DIGIT_6', '7': 'DIGIT_7', '8': 'DIGIT_8', '9': 'DIGIT_9',
+};
+
+/** RemoteKey -> Android KEYCODE_* name (Android TV driver). */
+export const ANDROID_KEYS: Record<RemoteKey, string> = {
+  UP: 'KEYCODE_DPAD_UP',
+  DOWN: 'KEYCODE_DPAD_DOWN',
+  LEFT: 'KEYCODE_DPAD_LEFT',
+  RIGHT: 'KEYCODE_DPAD_RIGHT',
+  SELECT: 'KEYCODE_DPAD_CENTER',
+  BACK: 'KEYCODE_BACK',
+  HOME: 'KEYCODE_HOME',
+  MENU: 'KEYCODE_MENU',
+  EXIT: 'KEYCODE_HOME',
+  INFO: 'KEYCODE_INFO',
+  POWER: 'KEYCODE_POWER',
+  POWER_ON: 'KEYCODE_WAKEUP',
+  POWER_OFF: 'KEYCODE_SLEEP',
+  VOLUME_UP: 'KEYCODE_VOLUME_UP',
+  VOLUME_DOWN: 'KEYCODE_VOLUME_DOWN',
+  MUTE: 'KEYCODE_VOLUME_MUTE',
+  PLAY_PAUSE: 'KEYCODE_MEDIA_PLAY_PAUSE',
+  PLAY: 'KEYCODE_MEDIA_PLAY',
+  PAUSE: 'KEYCODE_MEDIA_PAUSE',
+  STOP: 'KEYCODE_MEDIA_STOP',
+  NEXT: 'KEYCODE_MEDIA_NEXT',
+  PREVIOUS: 'KEYCODE_MEDIA_PREVIOUS',
+  REWIND: 'KEYCODE_MEDIA_REWIND',
+  FAST_FORWARD: 'KEYCODE_MEDIA_FAST_FORWARD',
+  SEARCH: 'KEYCODE_SEARCH',
+  ASSIST: 'KEYCODE_ASSIST',
+  SETTINGS: 'KEYCODE_SETTINGS',
+  INPUT: 'KEYCODE_TV_INPUT',
+  CHANNEL_UP: 'KEYCODE_CHANNEL_UP',
+  CHANNEL_DOWN: 'KEYCODE_CHANNEL_DOWN',
+  CAPTIONS: 'KEYCODE_CAPTIONS',
+  GUIDE: 'KEYCODE_GUIDE',
+  DIGIT_0: 'KEYCODE_0', DIGIT_1: 'KEYCODE_1', DIGIT_2: 'KEYCODE_2', DIGIT_3: 'KEYCODE_3', DIGIT_4: 'KEYCODE_4',
+  DIGIT_5: 'KEYCODE_5', DIGIT_6: 'KEYCODE_6', DIGIT_7: 'KEYCODE_7', DIGIT_8: 'KEYCODE_8', DIGIT_9: 'KEYCODE_9',
+  RED: 'KEYCODE_PROG_RED',
+  GREEN: 'KEYCODE_PROG_GREEN',
+  YELLOW: 'KEYCODE_PROG_YELLOW',
+  BLUE: 'KEYCODE_PROG_BLUE',
+};
+
+/** RemoteKey -> Roku ECP keypress name. */
+export const ROKU_KEYS: Partial<Record<RemoteKey, string>> = {
+  UP: 'Up', DOWN: 'Down', LEFT: 'Left', RIGHT: 'Right', SELECT: 'Select',
+  BACK: 'Back', HOME: 'Home', MENU: 'Info', EXIT: 'Home', INFO: 'Info',
+  POWER: 'Power', POWER_ON: 'PowerOn', POWER_OFF: 'PowerOff',
+  VOLUME_UP: 'VolumeUp', VOLUME_DOWN: 'VolumeDown', MUTE: 'VolumeMute',
+  PLAY_PAUSE: 'Play', PLAY: 'Play', PAUSE: 'Play', STOP: 'Stop', NEXT: 'Fwd', PREVIOUS: 'Rev',
+  REWIND: 'Rev', FAST_FORWARD: 'Fwd', SEARCH: 'Search', INPUT: 'InputHDMI1',
+  CHANNEL_UP: 'ChannelUp', CHANNEL_DOWN: 'ChannelDown',
+};
+
+/** RemoteKey -> Samsung Tizen KEY_* name. */
+export const SAMSUNG_KEYS: Partial<Record<RemoteKey, string>> = {
+  UP: 'KEY_UP', DOWN: 'KEY_DOWN', LEFT: 'KEY_LEFT', RIGHT: 'KEY_RIGHT', SELECT: 'KEY_ENTER',
+  BACK: 'KEY_RETURN', HOME: 'KEY_HOME', MENU: 'KEY_MENU', EXIT: 'KEY_EXIT', INFO: 'KEY_INFO',
+  POWER: 'KEY_POWER', POWER_ON: 'KEY_POWER', POWER_OFF: 'KEY_POWER',
+  VOLUME_UP: 'KEY_VOLUP', VOLUME_DOWN: 'KEY_VOLDOWN', MUTE: 'KEY_MUTE',
+  PLAY_PAUSE: 'KEY_PLAY', PLAY: 'KEY_PLAY', PAUSE: 'KEY_PAUSE', STOP: 'KEY_STOP', NEXT: 'KEY_FF', PREVIOUS: 'KEY_REWIND',
+  REWIND: 'KEY_REWIND', FAST_FORWARD: 'KEY_FF', SEARCH: 'KEY_SEARCH', SETTINGS: 'KEY_MENU', INPUT: 'KEY_SOURCE',
+  CHANNEL_UP: 'KEY_CHUP', CHANNEL_DOWN: 'KEY_CHDOWN', CAPTIONS: 'KEY_CAPTION', GUIDE: 'KEY_GUIDE',
+  DIGIT_0: 'KEY_0', DIGIT_1: 'KEY_1', DIGIT_2: 'KEY_2', DIGIT_3: 'KEY_3', DIGIT_4: 'KEY_4',
+  DIGIT_5: 'KEY_5', DIGIT_6: 'KEY_6', DIGIT_7: 'KEY_7', DIGIT_8: 'KEY_8', DIGIT_9: 'KEY_9',
+  RED: 'KEY_RED', GREEN: 'KEY_GREEN', YELLOW: 'KEY_YELLOW', BLUE: 'KEY_CYAN',
+};
+
+/** RemoteKey -> LG webOS pointer-input-socket button name. */
+export const WEBOS_KEYS: Partial<Record<RemoteKey, string>> = {
+  UP: 'UP', DOWN: 'DOWN', LEFT: 'LEFT', RIGHT: 'RIGHT', SELECT: 'ENTER',
+  BACK: 'BACK', HOME: 'HOME', MENU: 'MENU', EXIT: 'EXIT', INFO: 'INFO',
+  VOLUME_UP: 'VOLUMEUP', VOLUME_DOWN: 'VOLUMEDOWN', MUTE: 'MUTE',
+  PLAY: 'PLAY', PAUSE: 'PAUSE', STOP: 'STOP', REWIND: 'REWIND', FAST_FORWARD: 'FASTFORWARD',
+  CHANNEL_UP: 'CHANNELUP', CHANNEL_DOWN: 'CHANNELDOWN', CAPTIONS: 'CC', GUIDE: 'GUIDE', SETTINGS: 'MENU',
+  DIGIT_0: '0', DIGIT_1: '1', DIGIT_2: '2', DIGIT_3: '3', DIGIT_4: '4',
+  DIGIT_5: '5', DIGIT_6: '6', DIGIT_7: '7', DIGIT_8: '8', DIGIT_9: '9',
+  RED: 'RED', GREEN: 'GREEN', YELLOW: 'YELLOW', BLUE: 'BLUE',
+};

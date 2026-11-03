@@ -1,0 +1,48 @@
+{
+  "name": "android-tv-controller",
+  "version": "0.8.0",
+  "description": "Control Chromecast, Samsung, LG, Roku and Android TVs from your Mac or Windows desktop",
+  "main": "dist/main/index.js",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && npm run bundle:preload && npm run copy:static",
+    "bundle:preload": "esbuild src/preload/index.ts --bundle --platform=node --format=cjs --external:electron --outfile=dist/preload/index.js",
+    "copy:static": "node scripts/copy-renderer.js",
+    "start": "npm run build && electron .",
+    "dev": "npm run build && electron . --dev",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test test/remote-input.test.js test/playback.test.js test/samsung-lifecycle.test.js test/credential-storage.test.js && node test/deeplink.test.js && node test/activity.test.js && node test/remote-session.test.js && node test/pairing.test.js && node test/stress.test.js",
+    "package": "npm run build && electron-builder --config electron-builder.config.js --publish never",
+    "package:mac": "npm run build && electron-builder --config electron-builder.config.js --mac --publish never",
+    "package:win": "npm run build && electron-builder --config electron-builder.config.js --win --publish never",
+    "package:linux": "npm run build && electron-builder --config electron-builder.config.js --linux --publish never",
+    "stress": "npm run build && node test/stress.test.js && node test/stress-drivers.test.js",
+    "stress:ui": "npm run build && electron test/stress-ui.js"
+  },
+  "dependencies": {
+    "androidtv-remote": "^1.0.10",
+    "bonjour-service": "^1.4.4",
+    "castv2-client": "^1.2.0",
+    "electron-updater": "^6.8.11",
+    "protobufjs": "^6.11.6",
+    "ws": "^8.22.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.18.2",
+    "electron": "^45.2.1",
+    "electron-builder": "^26.0.0",
+    "esbuild": "^0.25.12",
+    "typescript": "^5.6.0"
+  },
+  "author": {
+    "name": "thesiyonara",
+    "email": "thesiyonara@users.noreply.github.com"
+  },
+  "homepage": "https://github.com/thesiyonara/tv-controller",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thesiyonara/tv-controller.git"
+  }
+}

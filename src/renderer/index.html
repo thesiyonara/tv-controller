@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' http: https: data:" />
+  <title>TV Controller</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="titlebar">
+    <div class="traffic-space"></div>
+    <button id="device-picker" class="pill" title="Switch device">
+      <span id="status-dot" class="dot"></span>
+      <span id="picker-name">Choose a device</span>
+      <span id="picker-sub" class="muted"></span>
+      <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <button id="type-bar" class="type-bar" title="Type on the TV or search">
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M18 13h.01M9 15h6"/></svg>
+      <span>Type on the TV or search YouTube, Netflix…</span>
+      <kbd data-mod>K</kbd>
+    </button>
+    <button id="btn-compact" class="icon-btn" title="Compact remote" aria-label="Compact remote">
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>
+    </button>
+    <button id="btn-help" class="icon-btn" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="2" y="6" width="20" height="12" rx="2.5"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6"/></svg>
+    </button>
+    <button id="btn-settings" class="icon-btn" title="Settings" aria-label="Settings">
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    </button>
+  </header>
+
+  <div class="body">
+    <nav class="sidebar" aria-label="Devices">
+      <div class="section-label">Devices <span class="row" style="gap:10px"><button id="btn-link" class="link" title="Combine a streaming box with the TV it is plugged into">Link</button><button id="btn-rescan" class="link" title="Look again">Rescan</button><button id="btn-devtools" class="icon-btn mini hidden" aria-label="Finding TVs" title="Scan, details, add by IP"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button></span></div>
+      <ul id="device-list" class="device-list"></ul>
+      <div id="link-hint" class="hint-card hidden"></div>
+      <div id="discovery-tools" class="discovery-tools">
+      <div id="scan-status" class="scan-status muted"></div>
+      <div class="row">
+        <button id="btn-deepscan" class="small grow">Scan network</button>
+        <button id="btn-diag" class="small ghost">Details</button>
+      </div>
+      <details class="manual" id="manual">
+        <summary>Add by IP address</summary>
+        <div class="row wrap">
+          <input id="manual-host" placeholder="192.168.1.50" aria-label="IP address" />
+          <select id="manual-kind" aria-label="Device type">
+            <option value="androidtv">Android / Google TV</option>
+            <option value="cast">Chromecast</option>
+            <option value="samsung">Samsung</option>
+            <option value="webos">LG</option>
+            <option value="roku">Roku</option>
+          </select>
+          <button id="manual-add" class="small">Add</button>
+        </div>
+      </details>
+      </div>
+      <div class="row between"><div class="section-label">Pinned apps</div><button id="pins-manage" class="link small" aria-label="Arrange pinned apps">Arrange</button></div>
+      <div id="pinned-apps" class="pinned-grid"></div>
+      <div id="live-section" class="side-activity">
+        <div class="section-label">Activity <span id="live-sub" class="live-dot hidden" title="Updating as the TV reports"></span></div>
+        <ol id="activity-list" class="activity"></ol>
+      </div>
+      <div id="sidebar-status" class="muted small"></div>
+    </nav>
+
+    <main class="center" id="center">
+      <section id="empty-state" class="empty">
+        <div class="welcome-icon" aria-hidden="true"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="3"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <h2>Your TV, within reach</h2>
+        <p class="muted">Turn on your TV and connect this computer to the same Wi‑Fi. Choose a device when it appears, or scan to find it.</p>
+        <button id="welcome-scan" class="primary">Find my TV</button>
+        <span class="welcome-note">Your remote connects over your local network.</span>
+      </section>
+
+      <section id="now-card" class="now hidden" aria-label="Now on TV">
+        <div class="now-top">
+          <span class="section-label" id="now-label">Now on TV</span>
+          <span id="now-state" class="state-pill hidden"></span>
+          <span class="spacer"></span>
+          <button id="now-live" class="link hidden" title="Watch what the TV shows, over ADB">Live view</button>
+          <button id="now-more" class="icon-btn mini" aria-label="More" title="More"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+        </div>
+        <div id="now-art" class="art"></div>
+        <div class="now-meta">
+          <div id="now-title" class="now-title">Nothing playing</div>
+          <div id="now-sub" class="muted"></div>
+          <div class="progress-row">
+            <div class="progress" id="now-progress"><div id="now-bar"></div><input id="now-seek" type="range" min="0" max="100" step="1" value="0" aria-label="Playback position" title="Drag to seek · arrow keys move 10 seconds" disabled></div>
+            <span id="now-time" class="muted small"><span id="now-pos">0:00</span><span id="now-dur-wrap"> / <span id="now-dur">0:00</span></span></span>
+            <span id="now-ends" class="muted small hidden"></span>
+          </div>
+          <div class="now-actions">
+            <button data-media="previous" class="sq" aria-label="Previous"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM20 6l-10 6 10 6z"/></svg></button>
+            <button data-media="toggle" id="now-toggle" class="sq primary" aria-label="Play or pause"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></button>
+            <button data-media="next" class="sq" aria-label="Next"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM4 6l10 6-10 6z"/></svg></button>
+            <button id="now-open" class="link hidden" title="Open the same video in your browser">Open on this computer</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="continue-section" class="hidden" aria-label="Continue watching">
+        <div class="section-head"><h2>Continue watching</h2><span class="muted small">Seen from this computer</span></div>
+        <div id="continue-row" class="continue-row"></div>
+      </section>
+
+      <section id="apps-section" class="hidden" aria-label="Apps">
+        <div class="section-head">
+          <h2>Apps <span id="apps-source" class="muted small"></span></h2>
+          <div class="row">
+            <label class="app-search"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input id="apps-filter" placeholder="Find an app" aria-label="Filter apps" /><button id="apps-clear" class="icon-btn mini hidden" aria-label="Clear app filter" type="button">×</button></label>
+            <button id="apps-install" class="small hidden" title="Sideload an APK over ADB">Install APK</button>
+            <button id="apps-refresh" class="small ghost">Refresh</button>
+          </div>
+        </div>
+        <div class="app-toolbar"><div class="app-scopes" role="group" aria-label="Show apps"><button class="scope active" data-scope="all" aria-pressed="true">All apps</button><button class="scope" data-scope="pinned" aria-pressed="false">Pinned</button></div><span id="apps-count" class="muted small" aria-live="polite"></span></div>
+        <div id="apps-grid" class="apps-grid"></div>
+        <p id="apps-hint" class="muted small"></p>
+      </section>
+    </main>
+
+    <aside class="remote" aria-label="Remote">
+      <div id="compact-now" class="compact-now compact-flex">
+        <div id="cnow-art" class="art-mini"></div>
+        <div class="grow"><div id="cnow-title" class="ellipsis">Nothing playing</div><div id="cnow-sub" class="muted small ellipsis"></div></div>
+        <button id="cnow-toggle" class="sq" aria-label="Play or pause"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></button>
+      </div>
+
+      <div class="r-grid four" id="remote-top">
+        <button data-key="POWER" class="ic" aria-label="Power" title="Power · right-click for sleep timer"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M18.36 6.64a9 9 0 11-12.73 0M12 2v10"/></svg></button>
+        <button data-key="INPUT" class="ic" aria-label="Input source" title="Input source"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 4h11v16H9M2 12h12m-4-4 4 4-4 4"/></svg></button>
+        <button id="btn-keyboard" class="ic" aria-label="Type on the TV" title="Type on the TV"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M18 13h.01M9 15h6"/></svg></button>
+        <button data-key="ASSIST" class="ic" aria-label="Assistant" title="Google Assistant"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 17v5"/></svg></button>
+      </div>
+
+      <div id="pad-area" class="pad">
+        <button class="corner tl" data-corner="tl" title="Right-click to change"></button>
+        <button class="corner tr" data-corner="tr" title="Right-click to change"></button>
+        <button class="corner bl" data-corner="bl" title="Right-click to change"></button>
+        <button class="corner br" data-corner="br" title="Right-click to change"></button>
+        <div class="dpad" id="dpad" role="group" aria-label="Directional pad">
+          <button data-key="UP" class="dir up" aria-label="Up"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path d="M6 15l6-6 6 6"/></svg></button>
+          <button data-key="LEFT" class="dir left" aria-label="Left"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path d="M15 6l-6 6 6 6"/></svg></button>
+          <button data-key="SELECT" class="ok" aria-label="Select">OK</button>
+          <button data-key="RIGHT" class="dir right" aria-label="Right"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path d="M9 6l6 6-6 6"/></svg></button>
+          <button data-key="DOWN" class="dir down" aria-label="Down"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path d="M6 9l6 6 6-6"/></svg></button>
+        </div>
+        <div class="numpad hidden" id="numpad">
+          <button data-key="DIGIT_1">1</button><button data-key="DIGIT_2">2</button><button data-key="DIGIT_3">3</button>
+          <button data-key="DIGIT_4">4</button><button data-key="DIGIT_5">5</button><button data-key="DIGIT_6">6</button>
+          <button data-key="DIGIT_7">7</button><button data-key="DIGIT_8">8</button><button data-key="DIGIT_9">9</button>
+          <button data-key="GUIDE" class="small-label">Guide</button><button data-key="DIGIT_0">0</button><button data-key="EXIT" class="small-label">Exit</button>
+        </div>
+      </div>
+
+      <div class="r-grid three" id="remote-nav">
+        <button data-key="BACK"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m9 5-7 7 7 7M2 12h13a6 6 0 0 1 6 6"/></svg><span>Back</span></button>
+        <button data-key="HOME">Home</button>
+        <button data-key="MENU"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>Menu</span></button>
+      </div>
+      <div class="r-grid four utility" id="remote-utility">
+        <button data-key="INFO" title="Info">Info</button>
+        <button data-key="CAPTIONS" title="Subtitles / captions">CC</button>
+        <button data-key="SETTINGS" title="TV settings" aria-label="TV settings"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+        <button id="btn-numpad" title="Number pad" aria-pressed="false">123</button>
+      </div>
+
+      <div class="vol" id="volume-box" title="Scroll to change volume">
+        <div class="vol-head"><button id="vol-via" class="link" title="Choose which device the volume keys go to">Volume</button><span id="vol-label">—</span></div>
+        <input id="vol-slider" type="range" min="0" max="100" value="0" aria-label="Volume" />
+        <div class="r-row">
+          <div class="seg grow">
+            <button data-key="VOLUME_DOWN" aria-label="Volume down" title="Volume down">−</button>
+            <button data-key="MUTE" aria-label="Mute" title="Mute"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"/></svg></button>
+            <button data-key="VOLUME_UP" aria-label="Volume up" title="Volume up">+</button>
+          </div>
+          <div class="seg" id="channel-box">
+            <button data-key="CHANNEL_DOWN" aria-label="Channel down" title="Channel down"><span class="ch">CH</span><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path d="M6 9l6 6 6-6"/></svg></button>
+            <button data-key="CHANNEL_UP" aria-label="Channel up" title="Channel up"><span class="ch">CH</span><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path d="M6 15l6-6 6 6"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="r-grid four media" id="remote-media">
+        <button class="cast-only-skip hidden" data-skip="-10" aria-label="Back 10 seconds" title="Back 10 seconds"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+        <button data-key="REWIND" aria-label="Rewind" title="Rewind"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18l-8.5-6L11 6zM20 18l-8.5-6L20 6z"/></svg></button>
+        <button data-key="PLAY_PAUSE" aria-label="Play or pause" title="Play / pause"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5l8 7-8 7zM14 5h3v14h-3zM19 5h3v14h-3z"/></svg></button>
+        <button data-key="STOP" aria-label="Stop" title="Stop"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="2"/></svg></button>
+        <button data-key="FAST_FORWARD" aria-label="Fast forward" title="Fast forward"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 6l8.5 6L13 18zM4 6l8.5 6L4 18z"/></svg></button>
+        <button class="cast-only-skip hidden" data-skip="10" aria-label="Forward 10 seconds" title="Forward 10 seconds"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg></button>
+      </div>
+      <div class="remote-footer"><button id="btn-keymode" class="keymode" aria-pressed="false" title="Every key you press goes to the TV until you press Esc (⌘⇧L on Mac, Ctrl+Shift+L on Windows)">Keyboard mode</button><button id="btn-remote-tools" title="Sleep timer, shortcuts, pinned apps and playback" aria-haspopup="dialog">Tools <span aria-hidden="true">⋯</span></button></div>
+
+      <div id="compact-apps" class="pinned-grid compact-only"></div>
+      <div class="spacer"></div>
+    </aside>
+  </div>
+
+  <div id="update-banner" class="update-banner hidden">
+    <span id="update-text"></span>
+    <button id="update-action" class="small primary"></button>
+    <button id="update-dismiss" class="icon-btn" aria-label="Dismiss">✕</button>
+  </div>
+  <div id="drop-hint" class="drop-hint hidden"><div>Drop to send to the TV<br><span class="muted small">Links play · text is typed · .apk files install</span></div></div>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <div id="sheet-remote-tools" class="overlay hidden">
+    <section class="sheet remote-tools-sheet" role="dialog" aria-label="Remote tools">
+      <div class="row between"><div><div class="sheet-title">Remote tools</div><div id="tools-target" class="small muted"></div></div><button class="icon-btn" data-close aria-label="Close">✕</button></div>
+      <nav class="tools-tabs" role="tablist" aria-label="Remote tools sections"><button role="tab" id="tools-tab-sleep" data-tools-tab="sleep" aria-controls="tools-panel-sleep">Sleep timer</button><button role="tab" id="tools-tab-corners" data-tools-tab="corners" aria-controls="corner-tools">Shortcuts</button><button role="tab" id="tools-tab-pins" data-tools-tab="pins" aria-controls="pin-tools">Apps</button><button role="tab" id="tools-tab-playback" data-tools-tab="playback" aria-controls="playback-tools">Playback</button></nav>
+      <div class="sheet-body">
+        <section id="tools-panel-sleep" class="tool-section" data-tools-panel="sleep" role="tabpanel" aria-labelledby="tools-tab-sleep">
+          <h3 id="sleep-heading">Sleep timer</h3>
+          <p id="sleep-description" class="muted small">Turn off the TV after a little while.</p>
+          <div id="sleep-chip" class="chip hidden"><span id="sleep-text"></span><button id="sleep-cancel" class="link">Cancel timer</button></div>
+          <div class="sleep-presets" aria-label="Sleep timer duration"><button data-sleep-minutes="15">15 min</button><button data-sleep-minutes="30">30 min</button><button data-sleep-minutes="60">1 hour</button><button data-sleep-minutes="90">90 min</button></div>
+          <form id="sleep-form" class="sleep-custom"><label for="sleep-minutes">Custom minutes</label><input id="sleep-minutes" type="number" min="1" max="1440" step="1" value="45" required><button class="primary" type="submit">Set timer</button></form>
+        </section>
+        <section id="playback-tools" class="tool-section" data-tools-panel="playback" role="tabpanel" aria-labelledby="tools-tab-playback">
+          <h3 id="playback-heading">Playback details</h3>
+          <p id="playback-status" class="muted small"></p>
+          <button id="playback-reconnect" class="small">Enable playback reporting</button>
+        </section>
+        <section id="corner-tools" class="tool-section" data-tools-panel="corners" role="tabpanel" aria-labelledby="tools-tab-corners">
+          <div class="row between"><h3 id="corners-heading">Corner shortcuts</h3><button id="corners-reset" class="small ghost">Reset corners</button></div>
+          <p class="muted small">Choose the four shortcuts around the wheel. Shared across your remotes.</p>
+          <div class="corner-edit-grid">
+            <label>↖ Top left<select data-edit-corner="tl" aria-label="Top left shortcut"></select></label>
+            <label>↗ Top right<select data-edit-corner="tr" aria-label="Top right shortcut"></select></label>
+            <label>↙ Bottom left<select data-edit-corner="bl" aria-label="Bottom left shortcut"></select></label>
+            <label>↘ Bottom right<select data-edit-corner="br" aria-label="Bottom right shortcut"></select></label>
+          </div>
+        </section>
+        <section id="pin-tools" class="tool-section" data-tools-panel="pins" role="tabpanel" aria-labelledby="tools-tab-pins">
+          <h3>Pinned apps</h3><p class="muted small">Drag apps into your preferred order. The first eight appear on the remote; all stay in the Pinned apps filter.</p>
+          <div id="pin-order" class="pin-order" aria-label="Pinned app order"></div>
+        </section>
+        <p class="small muted tools-tip">Press and hold a direction to keep moving. Use Tab to focus a control, then Enter or Space to press it.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Type / search -->
+  <div id="sheet-type" class="overlay hidden">
+    <section class="sheet" role="dialog" aria-label="Type or search">
+      <div class="row between type-heading"><div><div class="sheet-title">Type &amp; search</div><div id="type-target" class="muted small"></div></div><button class="icon-btn" data-close aria-label="Close">✕</button></div>
+      <div class="type-destinations">
+        <div class="row tabs" id="type-tabs" role="tablist">
+          <button data-tab="tv" class="tab active" role="tab">Type on TV</button>
+          <button data-tab="tvsearch" class="tab" role="tab" title="The TV’s own search across its apps">TV search</button>
+          <button data-tab="youtube" class="tab" role="tab">YouTube</button>
+          <button data-tab="netflix" class="tab" role="tab">Netflix</button>
+          <button data-tab="disney" class="tab" role="tab">Disney+</button>
+          <button data-tab="prime" class="tab" role="tab">Prime</button>
+          <button data-tab="stremio" class="tab hidden" role="tab" title="Stremio on Google TV">Stremio</button>
+        </div>
+        <label class="type-destination-label">Destination<select id="type-destination" aria-label="Typing or search destination"></select></label>
+      </div>
+      <div id="type-ontv" class="ontv hidden"><span class="section-label">On the TV</span><span id="type-ontv-value"></span></div>
+      <div class="row">
+        <input id="type-input" aria-label="Text or search query" placeholder="Start typing. Enter sends." autocomplete="off" spellcheck="false" />
+        <button id="type-send" class="primary">Send</button>
+      </div>
+      <div id="type-context" class="muted small"></div>
+      <div id="type-options" class="row between small muted wrap">
+        <label><input id="type-live" type="checkbox" /> Live typing</label>
+        <label title="Also keeps the text out of the activity feed"><input id="type-private" type="checkbox" /> Don’t keep in history</label>
+      </div>
+      <div id="search-results" class="results hidden"></div>
+      <div id="history-chips" class="chips"></div>
+      <div class="clip" id="clip-box">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/></svg>
+        <div class="grow"><div class="muted small">Clipboard</div><div id="clip-text" class="ellipsis">—</div></div>
+        <button id="clip-paste" class="small">Paste as text</button>
+        <button id="clip-open" class="small primary hidden">Play on TV</button>
+      </div>
+      <div class="row" id="type-footer">
+        <button id="type-clear" class="ghost small">Clear field on TV</button>
+        <button data-key="BACK" class="ghost small">Close TV keyboard</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Pairing -->
+  <div id="sheet-pair" class="overlay hidden">
+    <section class="sheet narrow" role="dialog" aria-label="Pair">
+      <div class="sheet-title">Pair with <span id="pair-name"></span></div>
+      <div id="pair-code-mode">
+        <p class="muted">The TV is showing a 6‑character code.</p>
+        <div class="row">
+          <input id="pair-code" maxlength="6" placeholder="A1B2C3" autocomplete="off" spellcheck="false" aria-label="Pairing code" />
+          <button id="pair-submit" class="primary">Pair</button>
+        </div>
+      </div>
+      <div id="pair-prompt-mode" class="hidden">
+        <p class="muted">On the TV, choose <strong>Allow</strong>. This happens once.</p>
+        <div class="spinner"></div>
+      </div>
+      <p id="pair-error" class="error"></p>
+      <div class="row end"><button class="ghost" data-close>Cancel</button></div>
+    </section>
+  </div>
+
+  <!-- Room -->
+  <div id="sheet-room" class="overlay hidden">
+    <section class="sheet narrow" role="dialog" aria-label="Room">
+      <div class="sheet-title">Link devices into a room</div>
+      <p class="muted small">Navigation, apps and typing go to the main device. Volume, mute and input go to the audio device. Power toggles both together. To wake the TV from fully off, enable <em>Power On with Mobile</em> (Samsung) or <em>Mobile TV On</em> (LG) in the TV’s settings.</p>
+      <label>Name <input id="room-name" placeholder="Living room" /></label>
+      <label>Main device <select id="room-primary"></select></label>
+      <label>Audio and power device <select id="room-audio"></select></label>
+      <div class="row between wrap">
+        <button id="room-delete" class="ghost danger small hidden">Delete room</button>
+        <div class="row"><button class="ghost" data-close>Cancel</button><button id="room-save" class="primary">Save</button></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Settings -->
+  <div id="sheet-settings" class="overlay hidden">
+    <section class="sheet settings" role="dialog" aria-label="Settings">
+      <div class="row between"><div class="sheet-title">Settings</div><button class="icon-btn" data-close aria-label="Close">✕</button></div>
+      <div class="settings-body">
+        <nav class="stabs" role="tablist" aria-label="Settings sections">
+          <button class="stab active" data-stab="general" role="tab">General</button>
+          <button class="stab" data-stab="shortcuts" role="tab">Shortcuts</button>
+          <button class="stab" data-stab="behaviour" role="tab">Behaviour</button>
+          <button class="stab" data-stab="privacy" role="tab">Privacy</button>
+          <button class="stab" data-stab="updates" role="tab">Updates</button>
+        </nav>
+        <div class="spanels">
+          <div class="spanel active" data-spanel="general">
+            <div class="sgroup">
+              <div class="group-title">Appearance</div>
+              <div class="setrow"><span class="t">Theme</span><div class="segctl" id="set-theme" role="group" aria-label="Theme"><button data-theme="dark">Dark</button><button data-theme="light">Light</button><button data-theme="system">System</button></div></div>
+              <div class="setrow palette-row"><label class="t" for="set-palette">Colour palette<span class="desc">Change the whole interface. Each works in dark and light.</span></label><select id="set-palette"><option value="charcoal">Cinema · warm charcoal</option><option value="sand">Sand · earthy neutrals</option><option value="plum">Plum · rich berry</option><option value="ocean">Ocean · deep blue</option></select></div>
+              <div class="setrow"><span class="t">Accent</span><div class="swatches" id="set-accent" role="group" aria-label="Accent colour"><button data-accent="neutral" title="Neutral" aria-label="Neutral"></button><button data-accent="coral" title="Coral" aria-label="Coral"></button><button data-accent="amber" title="Amber" aria-label="Amber"></button><button data-accent="mint" title="Mint" aria-label="Mint"></button><button data-accent="sky" title="Sky" aria-label="Sky"></button><button data-accent="violet" title="Violet" aria-label="Violet"></button></div></div>
+              <label class="setrow"><span class="t">Reduce motion<small>No transitions or cascades</small></span><input id="set-motion" type="checkbox" class="switch" /></label>
+            </div>
+            <div class="sgroup">
+              <div class="group-title">Startup</div>
+              <label class="setrow"><span class="t">Launch at login</span><input id="set-login" type="checkbox" class="switch" /></label>
+              <label class="setrow"><span class="t">Start in the tray<small>No window until you ask for one</small></span><input id="set-starthidden" type="checkbox" class="switch" /></label>
+            </div>
+            <div class="sgroup">
+              <div class="group-title">Typing</div>
+              <div class="setrow"><span class="t">How text reaches the TV<small>Automatic uses the TV keyboard when it is open, key presses otherwise</small></span>
+                <select id="set-textmode"><option value="auto">Automatic</option><option value="ime">TV keyboard only</option><option value="keys">Key presses only</option></select></div>
+            </div>
+          </div>
+          <div class="spanel" data-spanel="shortcuts">
+            <div class="sgroup">
+              <div class="group-title">From any app</div>
+              <label class="setrow"><span class="t">Global shortcuts</span><input id="set-shortcuts" type="checkbox" class="switch" /></label>
+              <div class="setrow"><span class="t">Compact remote</span><input id="set-shortcut-compact" class="acc" aria-label="Compact remote shortcut" /></div>
+              <div class="setrow"><span class="t">Type or search</span><input id="set-shortcut-type" class="acc" aria-label="Type or search shortcut" /></div>
+              <label class="setrow"><span class="t"><span><span data-mod>⌥1</span>–<span data-mod>⌥8</span> open pinned apps</span></span><input id="set-pinnedhotkeys" type="checkbox" class="switch" /></label>
+              <label class="setrow"><span class="t"><span><span data-mod>⌥↑</span> <span data-mod>⌥↓</span> <span data-mod>⌥M</span> change the TV volume</span></span><input id="set-volumehotkeys" type="checkbox" class="switch" /></label>
+              <label class="setrow"><span class="t">Media keys control the TV<small>Play/pause, next, previous and stop keys on the keyboard</small></span><input id="set-mediakeys" type="checkbox" class="switch" /></label>
+            </div>
+            <div class="sgroup">
+              <div class="group-title">In the app</div>
+              <div class="setrow"><span class="t">All keyboard shortcuts<small>Arrows, Enter, letters, keyboard mode, corners</small></span><button id="set-open-help" class="small">Show list</button></div>
+            </div>
+          </div>
+          <div class="spanel" data-spanel="behaviour">
+            <div class="sgroup">
+              <div class="group-title">While you watch</div>
+              <label class="setrow"><span class="t">Come forward when the TV shows its keyboard</span><input id="set-popkeyboard" type="checkbox" class="switch" /></label>
+              <label class="setrow"><span class="t">Offer to play links you copy<small id="set-clipoffers-note"></small></span><input id="set-clipoffers" type="checkbox" class="switch" /></label>
+              <label class="setrow"><span class="t">Notify when something starts playing<small>Only while the window is hidden</small></span><input id="set-notify" type="checkbox" class="switch" /></label>
+              <label class="setrow"><span class="t">Show the activity feed<small>In the left panel, under the devices</small></span><input id="set-activity" type="checkbox" class="switch" /></label>
+              <label class="setrow"><span class="t">Compact remote stays on top</span><input id="set-ontop" type="checkbox" class="switch" /></label>
+            </div>
+            <div class="sgroup">
+              <div class="group-title">Google TV</div>
+              <label class="setrow"><span class="t">Read what it plays over ADB automatically<small>Once the TV has allowed this computer</small></span><input id="set-adbauto" type="checkbox" class="switch" /></label>
+              <label class="setrow"><span class="t">Official app icons<small>From the app’s public Play Store page</small></span><input id="set-icons" type="checkbox" class="switch" /></label>
+            </div>
+          </div>
+          <div class="spanel" data-spanel="privacy">
+            <div class="sgroup">
+              <div class="group-title">Network</div>
+              <label class="setrow"><span class="t">Local network only<small>No update checks, icon or search lookups, downloads or web images</small></span><input id="set-localonly" type="checkbox" class="switch" /></label>
+              <label class="setrow"><span class="t">Encrypt saved TV pairings<small id="set-encrypt-note"></small></span><input id="set-encrypt" type="checkbox" class="switch" /></label>
+            </div>
+            <div class="sgroup">
+              <div class="group-title">On this computer</div>
+              <div class="setrow"><span class="t">Continue watching<small>Only what this computer has seen playing</small></span><button id="set-clear-history" class="small ghost danger">Clear</button></div>
+              <div class="setrow"><span class="t">Log file<small>Discovery and connection details, nothing else</small></span><button id="set-logs" class="small ghost">Show</button></div>
+            </div>
+          </div>
+          <div class="spanel" data-spanel="updates">
+            <div class="sgroup">
+              <div class="group-title">Updates</div>
+              <div class="setrow"><span class="t" id="settings-about">TV Controller</span><button id="set-check-update" class="small">Check for updates</button></div>
+              <div id="settings-update" class="update-status"></div>
+              <label class="setrow"><span class="t">Check automatically<small>At launch and every six hours</small></span><input id="set-autoupdate" type="checkbox" class="switch" /></label>
+            </div>
+            <div class="sgroup">
+              <div class="group-title">About</div>
+              <div class="muted small">TV Controller talks to Android TV, Google TV, Chromecast, Samsung, LG and Roku over your own network. Nothing leaves this computer except what the Privacy tab lists.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Developer tools / sideload -->
+  <div id="sheet-dev" class="overlay hidden">
+    <section class="sheet" role="dialog" aria-label="Developer tools">
+      <div class="row between"><div class="sheet-title">ADB tools for <span id="dev-name"></span></div><button class="icon-btn" data-close aria-label="Close">✕</button></div>
+      <div class="group">
+        <div class="group-title">1 · ADB on this computer</div>
+        <div id="adb-status" class="muted small"></div>
+        <div id="adb-download-box" class="row wrap hidden">
+          <label class="check grow"><input id="adb-terms" type="checkbox" /> <span>I accept the <a href="https://developer.android.com/studio/terms" id="adb-terms-link">Android SDK terms</a> for Google’s platform‑tools</span></label>
+          <button id="adb-download" class="small primary" disabled>Download</button>
+        </div>
+        <div class="row wrap"><button id="adb-pick" class="small">Choose adb…</button><span class="muted small">Homebrew, the Android SDK and a platform‑tools folder in Downloads are found on their own.</span></div>
+        <div id="adb-progress" class="progress hidden"><div></div></div>
+      </div>
+      <div class="group">
+        <div class="group-title">2 · Debugging on the TV</div>
+        <div class="muted small">Settings → System → About → press <em>Android TV OS build</em> seven times → Developer options → turn on <em>USB debugging</em> (and <em>Network debugging</em> if shown). When the TV asks, choose <strong>Always allow</strong>.</div>
+        <div class="row"><button id="adb-connect" class="small">Connect</button><span id="adb-connect-status" class="muted small"></span></div>
+      </div>
+      <div class="group">
+        <div class="group-title">3 · Install</div>
+        <div id="apk-drop" class="dropzone">
+          <div><strong>Drop an .apk here</strong><div class="muted small">or</div></div>
+          <button id="apk-choose" class="small">Choose APK…</button>
+        </div>
+        <div id="apk-status" class="muted small"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Tools</div>
+        <div class="row wrap"><button id="adb-screenshot" class="small">Screenshot</button><button id="adb-refresh-apps" class="small">Refresh app list</button><button id="adb-live" class="small">Live view</button><span class="muted small">Uninstall from an app’s right‑click menu.</span></div>
+        <div class="muted small">Live view reads what the TV is playing (any app, not only Cast‑aware ones) and can show its screen a few times a minute. Protected video can’t be captured and is labelled instead.</div>
+        <div id="adb-shot" class="shot hidden"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Discovery diagnostics -->
+  <div id="sheet-diag" class="overlay hidden">
+    <section class="sheet narrow" role="dialog" aria-label="Discovery diagnostics">
+      <div class="sheet-title">Finding your TVs</div>
+      <div id="diag-summary" class="muted small"></div>
+      <pre id="diag-log" class="log"></pre>
+      <div class="muted small">
+        The TV must be on and on the same Wi‑Fi as this computer (not a guest network). On macOS, allow the app under <em>Privacy &amp; Security → Local Network</em>. Routers with client isolation block discovery; the network scan still finds TVs by probing their ports. Last resort: add the TV by IP address.
+      </div>
+      <div class="row between wrap">
+        <button id="diag-localnet" class="small mac-only">Open Local Network settings</button>
+        <div class="row"><button id="diag-rescan" class="small">Scan again</button><button class="primary" data-close>Done</button></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Prompt -->
+  <div id="sheet-prompt" class="overlay hidden">
+    <section class="sheet narrow" role="dialog" aria-label="Prompt">
+      <div class="sheet-title" id="prompt-title"></div>
+      <input id="prompt-input" autocomplete="off" spellcheck="false" />
+      <div class="row end"><button class="ghost" data-close>Cancel</button><button id="prompt-ok" class="primary">OK</button></div>
+    </section>
+  </div>
+
+  <!-- Shortcuts -->
+  <div id="sheet-help" class="overlay hidden">
+    <section class="sheet narrow" role="dialog" aria-label="Keyboard shortcuts">
+      <div class="sheet-title">Keyboard shortcuts</div>
+      <table class="keys">
+        <tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></td><td>Navigate</td></tr>
+        <tr><td><kbd>⏎</kbd></td><td>OK</td></tr>
+        <tr><td><kbd>⌫</kbd> / <kbd>Esc</kbd></td><td>Back</td></tr>
+        <tr><td><kbd>H</kbd></td><td>Home</td></tr>
+        <tr><td><kbd>Space</kbd></td><td>Play / pause</td></tr>
+        <tr><td><kbd>+</kbd> <kbd>−</kbd> <kbd>M</kbd></td><td>Volume up / down / mute</td></tr>
+        <tr><td><kbd>I</kbd></td><td>Info</td></tr>
+        <tr><td><kbd>0</kbd>–<kbd>9</kbd></td><td>Channel digits</td></tr>
+        <tr><td><kbd data-mod>K</kbd></td><td>Type or search</td></tr>
+        <tr><td><kbd data-mod>V</kbd></td><td>Paste to the TV (links play)</td></tr>
+        <tr><td><kbd data-mod>⇧C</kbd></td><td>Compact remote</td></tr>
+        <tr><td><kbd id="help-global-compact"></kbd></td><td>Compact remote, from any app</td></tr>
+        <tr><td><kbd id="help-global-type"></kbd></td><td>Type or search, from any app</td></tr>
+        <tr><td><kbd data-mod>⌥1</kbd>–<kbd data-mod>⌥8</kbd></td><td>Pinned apps, from any app (Settings)</td></tr>
+        <tr><td><kbd data-mod>⌥↑</kbd> <kbd data-mod>⌥↓</kbd> <kbd data-mod>⌥M</kbd></td><td>TV volume, from any app (Settings)</td></tr>
+        <tr><td>Tools → Sleep timer</td><td>Turn the TV off later · also available by right-clicking power</td></tr>
+        <tr><td>Focus playback timeline</td><td>Arrow keys: 10 s · Page Up/Down: 1 min · Home/End: start/end</td></tr>
+        <tr><td>Scroll on volume</td><td>Volume up / down</td></tr>
+        <tr><td>Drop a link or .apk</td><td>Play it, or install it</td></tr>
+        <tr><td><kbd>L</kbd></td><td>Live view on / off (Google TV + ADB)</td></tr>
+        <tr><td>Any letter</td><td>Types on the TV while its keyboard is open</td></tr>
+        <tr><td><kbd data-mod>⇧L</kbd></td><td>Keyboard mode: every key goes to the TV until <kbd>Esc</kbd></td></tr>
+        <tr><td>Corners of the d‑pad</td><td>Skip 10 s / 1 min back or forward · change them in Tools → Shortcuts</td></tr>
+        <tr><td><kbd>?</kbd></td><td>This list</td></tr>
+      </table>
+      <div class="row end"><button class="primary" data-close>Done</button></div>
+    </section>
+  </div>
+
+  <script src="media-selection.js"></script>
+  <script src="remote-input.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
