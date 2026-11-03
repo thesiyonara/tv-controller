@@ -27,7 +27,9 @@ import { getStore, type Room } from './store';
 const isDev = process.argv.includes('--dev');
 const isMac = process.platform === 'darwin';
 const FULL_SIZE = { width: 1200, height: 780 };
-const COMPACT_SIZE = { width: 380, height: 720 };
+const COMPACT_SIZE = { width: 380, height: 760 };
+const COMPACT_MIN = { width: 380, height: 740 };
+const COMPACT_MAX = { width: 480, height: 900 };
 const ASSETS = path.join(__dirname, '..', '..', 'assets');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const APP_VERSION: string = require('../../package.json').version;
@@ -96,7 +98,7 @@ function savedBounds(key: 'windowBounds' | 'compactBounds'): WindowBounds | unde
   // Keep the two modes from contaminating each other: a "full" window narrower than the
   // three-column layout, or a "compact" one wider than a remote, is treated as unset.
   if (key === 'windowBounds' && (b.width < 820 || b.height < 560)) return undefined;
-  if (key === 'compactBounds' && (b.width > 560 || b.height < 320)) return undefined;
+  if (key === 'compactBounds' && (b.width < COMPACT_MIN.width || b.width > COMPACT_MAX.width || b.height < COMPACT_MIN.height || b.height > COMPACT_MAX.height)) return undefined;
   const area = screen.getDisplayMatching(b).workArea;
   const visible = b.x + b.width > area.x + 40 && b.x < area.x + area.width - 40 && b.y >= area.y - 10 && b.y < area.y + area.height - 40;
   return visible ? b : undefined;
@@ -129,26 +131,18 @@ function titleBarOverlay(): Electron.TitleBarOverlayOptions {
   return { color: panels[getStore().settings().palette || 'charcoal'][isLightTheme() ? 0 : 1], symbolColor: isLightTheme() ? '#262220' : '#F7F2EC', height: 52 };
 }
 
-/**
- * Scale-to-fit: below the design size the whole UI shrinks proportionally instead of hiding
- * controls (a 300 px wide compact remote is the 380 px one at 79 %). Above it nothing scales;
- * the layout breathes on its own.
- */
+/** Keep web controls aligned with native window buttons, which do not follow page zoom. */
 function applyZoom(): void {
   if (!win || win.isDestroyed()) return;
-  const [w, h] = win.getContentSize();
-  // Compact can go small (a remote stays usable at half size); the full window stops at 80 % and lets the layout drop columns instead.
-  const z = compact ? Math.max(0.55, Math.min(1, w / 380, h / 700)) : Math.max(0.8, Math.min(1, w / 900, h / 640));
-  const zoom = Math.round(z * 100) / 100;
-  if (Math.abs(win.webContents.getZoomFactor() - zoom) > 0.005) win.webContents.setZoomFactor(zoom);
+  if (win.webContents.getZoomFactor() !== 1) win.webContents.setZoomFactor(1);
 }
 
 function createWindow(opts: { hidden?: boolean } = {}): void {
   const saved = savedBounds('windowBounds');
   win = new BrowserWindow({
     ...(saved ?? FULL_SIZE),
-    minWidth: 300,
-    minHeight: 420,
+    minWidth: 820,
+    minHeight: 560,
     title: 'TV Controller',
     backgroundColor: themeBackground(),
     icon: process.platform === 'linux' ? path.join(ASSETS, 'icon.png') : undefined,
@@ -214,20 +208,23 @@ function setCompact(on: boolean): void {
     if (win) send(IPC.app.command, on ? 'compact:on' : 'compact:off');
     return;
   }
+  if (win.isMaximized()) win.unmaximize();
   persistBounds(true); // remember the bounds of the mode we're leaving
   compact = on;
   const settings = getStore().settings();
   if (on) {
-    win.setMinimumSize(220, 320);
-    win.setMaximumSize(560, 4000); // a remote wider than a hand looks wrong
+    win.setMinimumSize(COMPACT_MIN.width, COMPACT_MIN.height);
+    win.setMaximumSize(COMPACT_MAX.width, COMPACT_MAX.height);
+    win.setMaximizable(false); // compact mode should never become a full-height empty column
     const b = savedBounds('compactBounds');
     if (b) win.setBounds(b, true);
     else win.setSize(COMPACT_SIZE.width, COMPACT_SIZE.height, true);
     win.setAlwaysOnTop(settings.compactAlwaysOnTop, 'floating');
   } else {
     win.setAlwaysOnTop(false);
+    win.setMaximizable(true);
     win.setMaximumSize(20000, 20000);
-    win.setMinimumSize(300, 420);
+    win.setMinimumSize(820, 560);
     const b = savedBounds('windowBounds');
     if (b) win.setBounds(b, true);
     else win.setSize(FULL_SIZE.width, FULL_SIZE.height, true);
