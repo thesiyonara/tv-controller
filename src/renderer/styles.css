@@ -828,7 +828,9 @@ body.compact .remote { gap: 7px; }
 body.compact .remote { --compact-gap: 8px; gap: var(--compact-gap); padding: 10px 12px; overflow: hidden; }
 body.compact .remote > * { flex: none; }
 body.compact .pad { flex: 1 1 0; min-height: 128px; height: auto; max-width: none; --ring: 180px; }
-body.compact .pad .corner { display: none; }
+body.compact .pad .corner { display: flex; width: 72px; height: 32px; padding: 0 6px; border-radius: 9px; align-items: center; justify-content: center; gap: 4px; font-size: 10px; -webkit-mask: none; mask: none; }
+body.compact .pad .corner .mini { width: 22px; height: 22px; border-radius: 6px; }
+body.compact .pad.numbers .corner { display: none; }
 body.compact .dpad { top: calc(50% - var(--ring) / 2); }
 body.compact .dpad .ok { border-radius: 50%; width: 56px; height: 56px; left: calc(50% - 28px); top: calc(50% - 28px); font-size: 13px; }
 body.compact .compact-now { height: 48px; padding: 6px 9px; border-radius: 12px; }

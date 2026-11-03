@@ -2026,7 +2026,7 @@ const fitCompactRemote = new ResizeObserver(() => {
   compactRemote.style.setProperty('--compact-control', (h >= 590 ? 44 : h >= 500 ? 40 : 36) + 'px');
   if (compactRemote.dataset.density !== density) compactRemote.dataset.density = density;
   if (document.body.classList.contains('compact')) {
-    const ring = Math.max(100, Math.min(compactPad.clientHeight, compactPad.clientWidth - 20));
+    const ring = Math.max(100, Math.min(compactPad.clientHeight - 48, compactPad.clientWidth - 52));
     compactPad.style.setProperty('--ring', ring + 'px');
   } else compactPad.style.removeProperty('--ring');
 });
