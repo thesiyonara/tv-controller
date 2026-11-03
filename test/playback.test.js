@@ -98,3 +98,14 @@ test('Android TV exposes screen retry without dropping its current Stremio title
    driver.setLiveView({media:true,screen:false});assert.equal(driver.state.screenError,undefined);
  } finally {driver.setLiveView(null);adb.shellQuick=oldShell;adb.screenshotRaw=oldScreenshot;}
 });
+
+test('Android position is advanced from its device timestamp, not the poll time', () => {
+ const s=parseMediaSessions('package=com.stremio.one\nactive=true\nstate=PlaybackState {state=PLAYING(3), position=100000, speed=1.0, updated=50000}\nmetadata: size=4, description=Sample Series, Episode, null')[0];
+ assert.equal(toMedia(s,60000).currentTime,110);
+ assert.equal(toMedia({...s,speed:2},60000).currentTime,120);
+ assert.equal(toMedia({...s,state:2},60000).currentTime,100);
+ assert.equal(toMedia({...s,state:6},60000).currentTime,100);
+ assert.equal(toMedia(s,40000).currentTime,100);
+ assert.equal(toMedia(s).currentTime,100);
+ assert.equal(toMedia(s,60000).duration,undefined);
+});

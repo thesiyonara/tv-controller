@@ -28,6 +28,8 @@ export interface AdbMediaSession {
   state: number;
   /** milliseconds */
   position?: number;
+  updatedElapsedMs?: number;
+  speed?: number;
   title?: string;
   subtitle?: string;
 }
@@ -52,6 +54,10 @@ export function parseMediaSessions(dump: string): AdbMediaSession[] {
       const body = m[1];
       const st = /\bstate=(?:[A-Z_]+\()?(\d+)\)?/.exec(body);
       const pos = /\bposition=(-?\d+)/.exec(body);
+      const updated = /\bupdated=(\d+)/.exec(body);
+      const speed = /\bspeed=(-?[\d.]+)/.exec(body);
+      if (updated) cur.updatedElapsedMs = Number(updated[1]);
+      if (speed && Number.isFinite(Number(speed[1]))) cur.speed = Number(speed[1]);
       if (st) cur.state = Number(st[1]);
       if (pos && Number(pos[1]) >= 0) cur.position = Number(pos[1]);
     } else if ((m = /^metadata:\s*(?:size=\d+,\s*description=)?(.*)$/.exec(line))) {
@@ -76,14 +82,18 @@ export function pickSession(sessions: AdbMediaSession[], preferredPackage?: stri
     ?? candidates.find((s) => STATE_NAME[s.state] === 'PAUSED');
 }
 
-export function toMedia(s: AdbMediaSession): MediaInfo {
+export function toMedia(s: AdbMediaSession, deviceUptimeMs?: number): MediaInfo {
+  const playing = STATE_NAME[s.state] === 'PLAYING';
+  const age = playing && deviceUptimeMs !== undefined && s.updatedElapsedMs !== undefined
+    ? Math.max(0, deviceUptimeMs - s.updatedElapsedMs) : 0;
   return {
     source: 'adb',
     appId: s.pkg,
     title: s.title,
     subtitle: s.subtitle,
     playerState: STATE_NAME[s.state] ?? 'IDLE',
-    currentTime: s.position !== undefined ? s.position / 1000 : undefined,
+    currentTime: s.position !== undefined ? Math.max(0, s.position + age * (s.speed ?? 1)) / 1000 : undefined,
+    playbackRate: s.speed ?? 1,
     updatedAt: Date.now(),
   };
 }
@@ -163,13 +173,14 @@ export class AdbLive extends EventEmitter {
     this.busyMedia = true;
     const generation = this.generation;
     try {
-      const dump = await adb.shellQuick(this.host, ['dumpsys', 'media_session']);
+      const dump = await adb.shellQuick(this.host, ['cat /proc/uptime; dumpsys media_session']);
       if (generation !== this.generation || !this.opts.media) return;
+      const uptime = /^(\d+(?:\.\d+)?)\s+\d/m.exec(dump);
       const s = pickSession(parseMediaSessions(dump), this.currentPackage?.());
       const key = s ? JSON.stringify(s) : '';
       if (key !== this.lastKey) {
         this.lastKey = key;
-        this.emit('media', s ? toMedia(s) : undefined);
+        this.emit('media', s ? toMedia(s, uptime ? Number(uptime[1]) * 1000 : undefined) : undefined);
       }
       this.failures.media = 0;
     } catch (err) {

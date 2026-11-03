@@ -771,14 +771,14 @@ function tickProgress() {
   if (seekPreview && (seekPreview.identity !== seekIdentity(m) || seek.disabled || (seekPreview.until && Date.now() >= seekPreview.until))) seekPreview = null;
   if (seekPreview && !seekPreview.until) return;
   if (!m) { $('#now-bar').style.width = '0'; ends.classList.add('hidden'); return; }
-  const elapsed = m.playerState === 'PLAYING' && m.updatedAt ? (Date.now() - m.updatedAt) / 1000 : 0;
+  const elapsed = m.playerState === 'PLAYING' && m.updatedAt ? Math.max(0, Date.now() - m.updatedAt) / 1000 * (m.playbackRate ?? 1) : 0;
   const known = Number.isFinite(m.duration) && m.duration > 0;
   $('#now-progress').classList.toggle('hidden', !known);
   $('#now-dur-wrap').classList.toggle('hidden', !known);
   if (!known) {
     // ADB and Roku sessions know the position but not always the length: a running clock instead of a bar.
     $('#now-bar').style.width = '0';
-    $('#now-pos').textContent = m.currentTime !== undefined ? `at ${fmtTime((m.currentTime || 0) + elapsed)}` : '';
+    $('#now-pos').textContent = m.currentTime !== undefined ? `${fmtTime((m.currentTime || 0) + elapsed)} elapsed · duration unavailable` : '';
     ends.classList.add('hidden');
     return;
   }

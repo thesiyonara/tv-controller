@@ -104,6 +104,7 @@ export interface MediaInfo {
   /** seconds, as of `updatedAt` */
   currentTime?: number;
   duration?: number;
+  playbackRate?: number;
   updatedAt?: number;
 }
 
