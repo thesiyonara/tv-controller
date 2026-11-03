@@ -838,6 +838,7 @@ function renderRemote() {
   transport.setAttribute('aria-label', playback === 'PLAYING' ? 'Pause' : playback === 'PAUSED' ? 'Play' : 'Play or pause');
   transport.title = transport.getAttribute('aria-label');
   const castOnly = kind === 'cast';
+  $('.remote').classList.toggle('cast-only', castOnly);
   const unsupported = new Set(UNSUPPORTED[kind] || []);
   $$('.remote button[data-key]').forEach((b) => {
     const k = b.dataset.key;
@@ -2016,9 +2017,19 @@ async function init() {
   if (last && (last.startsWith('room:') ? S.rooms.some((r) => 'room:' + r.id === last) : device(last))) open(last);
 }
 
-$('#btn-compact-more').addEventListener('click', () => {
-  const expanded = document.body.classList.toggle('compact-expanded');
-  $('#btn-compact-more').setAttribute('aria-expanded', String(expanded));
-  $('#btn-compact-more').textContent = expanded ? 'Fewer controls' : 'More controls';
+// Use the actual available content area, including platform title-bar differences.
+const compactRemote = $('.remote');
+const compactPad = $('#pad-area');
+const fitCompactRemote = new ResizeObserver(() => {
+  const h = compactRemote.clientHeight;
+  const density = h < 370 ? 'micro' : h < 460 ? 'mini' : h < 590 ? 'balanced' : 'roomy';
+  compactRemote.style.setProperty('--compact-control', (h >= 590 ? 44 : h >= 500 ? 40 : 36) + 'px');
+  if (compactRemote.dataset.density !== density) compactRemote.dataset.density = density;
+  if (document.body.classList.contains('compact')) {
+    const ring = Math.max(100, Math.min(compactPad.clientHeight, compactPad.clientWidth - 20));
+    compactPad.style.setProperty('--ring', ring + 'px');
+  } else compactPad.style.removeProperty('--ring');
 });
+fitCompactRemote.observe(compactRemote);
+fitCompactRemote.observe(compactPad);
 init();

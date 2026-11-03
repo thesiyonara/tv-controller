@@ -824,32 +824,59 @@ body.compact .remote { gap: 7px; }
 .pin-draggable .pinned-launch { cursor: grab; }
 .pin-draggable img { -webkit-user-drag: none; }
 
-/* A corner remote reflows at full scale; native window controls never shrink. */
-#btn-compact-more { display: none; }
+/* Compact is its own fitted remote, not a scrolling desktop column. */
+body.compact .remote { --compact-gap: 8px; gap: var(--compact-gap); padding: 10px 12px; overflow: hidden; }
+body.compact .remote > * { flex: none; }
+body.compact .pad { flex: 1 1 0; min-height: 128px; height: auto; max-width: none; --ring: 180px; }
+body.compact .pad .corner { display: none; }
+body.compact .dpad { top: calc(50% - var(--ring) / 2); }
+body.compact .dpad .ok { border-radius: 50%; width: 56px; height: 56px; left: calc(50% - 28px); top: calc(50% - 28px); font-size: 13px; }
+body.compact .compact-now { height: 48px; padding: 6px 9px; border-radius: 12px; }
+body.compact .art-mini { width: 32px; height: 32px; border-radius: 8px; }
+body.compact #cnow-title { font-size: 12px; }
+body.compact #cnow-sub { font-size: 10px; }
+body.compact #remote-utility, body.compact .vol-head, body.compact #vol-slider,
+body.compact #channel-box { display: none; }
+body.compact .vol { gap: 0; }
+body.compact .remote button { border-radius: 10px; }
+body.compact #remote-top button { height: 32px; padding: 0; }
+body.compact #remote-nav button, body.compact .seg button, body.compact #remote-media button { height: var(--compact-control, 36px); padding: 0 8px; font-size: 12px; }
+body.compact #remote-media { order: 5; }
+body.compact #volume-box { order: 4; }
+body.compact #compact-now { order: 0; }
+body.compact #remote-top { order: 1; }
+body.compact .pad { order: 2; }
+body.compact #remote-nav { order: 3; }
+body.compact #compact-apps { order: 6; height: 42px; min-height: 0; max-height: none; padding: 0; overflow: hidden; grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 7px; }
+body.compact #compact-apps > button { height: 42px; width: 42px; justify-self: center; border-radius: 10px; }
+body.compact #compact-apps > button:nth-child(n+7) { display: none; }
+body.compact #compact-apps img { object-fit: contain; }
+body.compact .remote-footer { order: 7; gap: 6px; }
+body.compact .remote-footer button { height: 30px; padding: 0 8px; font-size: 11px; }
+body.compact .numpad { height: 100%; max-height: 240px; grid-template-rows: repeat(4,minmax(0,1fr)); gap: 5px; }
+body.compact .numpad button { height: 100%; min-height: 0; }
+body.compact .pad.numbers { display: flex; align-items: center; }
+body.compact .remote[data-density="balanced"] #remote-top,
+body.compact .remote[data-density="mini"] #remote-top { display: none; }
+body.compact .remote[data-density="mini"] { --compact-gap: 6px; padding: 8px 10px; }
+body.compact .remote[data-density="mini"] #compact-now { display: none; }
+body.compact .remote[data-density="micro"] { --compact-gap: 5px; padding: 7px 10px; }
+body.compact .remote[data-density="micro"] #compact-now,
+body.compact .remote[data-density="micro"] #remote-top,
+body.compact .remote[data-density="micro"] #compact-apps { display: none; }
 @media (max-width: 340px) {
   body.compact .titlebar { gap: 6px; padding-right: 8px; }
   body.compact #type-bar { display: none; }
-  body.compact .remote { padding-left: 10px; padding-right: 10px; }
-  body.compact .pad { --ring: 164px; }
+  body.compact #compact-apps { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  body.compact #compact-apps > button:nth-child(n+5) { display: none; }
 }
 @media (max-width: 480px) {
   body.win.compact .titlebar { height: 100px; padding: 52px 10px 0; }
 }
-@media (max-height: 739px) {
-  body.compact .remote { gap: 6px; padding: 8px 10px; }
-  body.compact .pad { --ring: 152px; }
-  body.compact .dpad .ok { width: 54px; height: 54px; left: calc(50% - 27px); top: calc(50% - 27px); }
-  body.compact .remote button { min-height: 34px; }
-  body.compact #remote-nav button, body.compact #remote-media button,
-  body.compact .seg button, body.compact .remote-footer button { height: 36px; padding: 0 8px; }
-  body.compact #btn-compact-more { display: flex; flex: none; height: 32px; color: var(--muted); background: transparent; }
-  body.compact:not(.compact-expanded) #compact-now,
-  body.compact:not(.compact-expanded) #remote-top,
-  body.compact:not(.compact-expanded) #remote-utility,
-  body.compact:not(.compact-expanded) #compact-apps,
-  body.compact:not(.compact-expanded) .vol-head,
-  body.compact:not(.compact-expanded) #vol-slider,
-  body.compact:not(.compact-expanded) #channel-box { display: none; }
-  body.compact:not(.compact-expanded) .vol { gap: 0; }
-  body.compact .remote-footer { flex-shrink: 0; }
-}
+
+body.compact .seg { height: var(--compact-control, 36px); }
+body.compact .seg button { border-radius: 0; }
+body.compact .remote.cast-only #compact-now { display: flex; flex: 1; height: auto; flex-direction: column; justify-content: center; gap: 16px; text-align: center; overflow: hidden; }
+body.compact .remote.cast-only #cnow-art { width: min(160px, 50vw); height: min(160px, 50vw); }
+body.compact .remote.cast-only #compact-now .grow { flex: none; width: 100%; }
+body.compact .remote.cast-only #cnow-toggle { display: none; }
