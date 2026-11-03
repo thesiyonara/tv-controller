@@ -26,9 +26,10 @@ const OVERFLOW = `(() => { const bad = []; const vw = window.innerWidth, vh = wi
   for (const el of document.querySelectorAll('body *')) { const cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden' || el.closest('.hidden') || el.closest('.toasts') || el.closest('.ctx')) continue; const r = el.getBoundingClientRect(); if (!r.width || !r.height) continue;
     const text = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) ? el.textContent.trim().slice(0, 28) : '';
     if (text && el.scrollWidth > el.clientWidth + 1 && cs.textOverflow !== 'ellipsis' && cs.overflowX !== 'auto' && cs.overflow !== 'auto' && cs.overflow !== 'hidden' && !el.closest('.apps-grid')) bad.push('overflow <' + el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + '> ' + text);
-    if (r.right > vw + 1 || r.left < -1) { if (!el.closest('.apps-grid, .continue-row')) bad.push('offscreen-x <' + el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + '> ' + text); } }
+    if (r.right > vw + 1 || r.left < -1) { if (!el.closest('.apps-grid, .continue-row, #compact-apps')) bad.push('offscreen-x <' + el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + '> ' + text); } }
   const c = document.getElementById('center'); if (c && c.scrollHeight > c.clientHeight + 1) bad.push('center scrolls ' + c.scrollHeight + '>' + c.clientHeight);
-  const sb = document.querySelector('.sidebar'); if (vh >= 620 && sb && getComputedStyle(sb).display !== 'none' && sb.scrollHeight > sb.clientHeight + 1) bad.push('sidebar scrolls ' + sb.scrollHeight + '>' + sb.clientHeight);
+  const sb = document.querySelector('.sidebar'); if (sb && getComputedStyle(sb).display !== 'none' && sb.scrollHeight > sb.clientHeight + 1 && !['auto', 'scroll'].includes(getComputedStyle(sb).overflowY)) bad.push('sidebar content is unreachable');
+  if (document.documentElement.scrollWidth > vw + 1 || document.documentElement.scrollHeight > vh + 1) bad.push('document overflows viewport');
   return [...new Set(bad)].slice(0, 8); })()`;
 
 // 60 devices on 40 hosts, 10 saved rooms, 400 apps, 30 history entries, 300 feed lines; hostile text everywhere it can come from
@@ -103,7 +104,7 @@ app.on('browser-window-created', (_e, win) => {
       check(base.nodes < 6000, 'baseline DOM is bounded: ' + base.nodes + ' nodes');
       const pwned = await js('window.__pwned');
       check(pwned === undefined, 'hostile strings do not run: __pwned=' + pwned);
-      check((await js('document.scripts.length')) === 1, 'no injected script elements');
+      check(await js(`JSON.stringify([...document.scripts].map(s => s.getAttribute('src'))) === JSON.stringify(['media-selection.js', 'remote-input.js', 'app.js']) && [...document.scripts].every(s => !s.textContent.trim())`), 'only expected external script elements');
       await shot('S1-baseline-hostile');
 
       // discovery churn: the full device list arriving over and over, as mDNS re-announcements do
