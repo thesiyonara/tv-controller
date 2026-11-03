@@ -823,3 +823,33 @@ body.compact .remote { gap: 7px; }
 .pin-order-row { gap: 6px; }
 .pin-draggable .pinned-launch { cursor: grab; }
 .pin-draggable img { -webkit-user-drag: none; }
+
+/* A corner remote reflows at full scale; native window controls never shrink. */
+#btn-compact-more { display: none; }
+@media (max-width: 340px) {
+  body.compact .titlebar { gap: 6px; padding-right: 8px; }
+  body.compact #type-bar { display: none; }
+  body.compact .remote { padding-left: 10px; padding-right: 10px; }
+  body.compact .pad { --ring: 164px; }
+}
+@media (max-width: 480px) {
+  body.win.compact .titlebar { height: 100px; padding: 52px 10px 0; }
+}
+@media (max-height: 739px) {
+  body.compact .remote { gap: 6px; padding: 8px 10px; }
+  body.compact .pad { --ring: 152px; }
+  body.compact .dpad .ok { width: 54px; height: 54px; left: calc(50% - 27px); top: calc(50% - 27px); }
+  body.compact .remote button { min-height: 34px; }
+  body.compact #remote-nav button, body.compact #remote-media button,
+  body.compact .seg button, body.compact .remote-footer button { height: 36px; padding: 0 8px; }
+  body.compact #btn-compact-more { display: flex; flex: none; height: 32px; color: var(--muted); background: transparent; }
+  body.compact:not(.compact-expanded) #compact-now,
+  body.compact:not(.compact-expanded) #remote-top,
+  body.compact:not(.compact-expanded) #remote-utility,
+  body.compact:not(.compact-expanded) #compact-apps,
+  body.compact:not(.compact-expanded) .vol-head,
+  body.compact:not(.compact-expanded) #vol-slider,
+  body.compact:not(.compact-expanded) #channel-box { display: none; }
+  body.compact:not(.compact-expanded) .vol { gap: 0; }
+  body.compact .remote-footer { flex-shrink: 0; }
+}

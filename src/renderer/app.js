@@ -2016,4 +2016,9 @@ async function init() {
   if (last && (last.startsWith('room:') ? S.rooms.some((r) => 'room:' + r.id === last) : device(last))) open(last);
 }
 
+$('#btn-compact-more').addEventListener('click', () => {
+  const expanded = document.body.classList.toggle('compact-expanded');
+  $('#btn-compact-more').setAttribute('aria-expanded', String(expanded));
+  $('#btn-compact-more').textContent = expanded ? 'Fewer controls' : 'More controls';
+});
 init();

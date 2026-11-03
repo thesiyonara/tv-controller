@@ -28,7 +28,7 @@ const isDev = process.argv.includes('--dev');
 const isMac = process.platform === 'darwin';
 const FULL_SIZE = { width: 1200, height: 780 };
 const COMPACT_SIZE = { width: 380, height: 760 };
-const COMPACT_MIN = { width: 380, height: 740 };
+const COMPACT_MIN = { width: 280, height: 480 };
 const COMPACT_MAX = { width: 480, height: 900 };
 const ASSETS = path.join(__dirname, '..', '..', 'assets');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
